@@ -95,8 +95,8 @@ module.exports = async (env, options) => {
       new HtmlWebpackPlugin({
         filename: "dialog.html",
         template: "./src/settings/dialog.html",
-        chunks: ["polyfill", "dialog"]
-      })
+        chunks: ["polyfill", "dialog"],
+      }),
     ],
     devServer: {
       headers: {

@@ -4,13 +4,16 @@
   <Version>1.0.0.0</Version>
   <ProviderName>Contoso</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Git the gist"/>
+  <DisplayName DefaultValue="Synology meeting DisplayName"/>
   <Description DefaultValue="Allows users to access their GitHub gists."/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://www.contoso.com/help"/>
   <AppDomains>
     <AppDomain>https://www.contoso.com</AppDomain>
+    <AppDomain>https://localhost:3000</AppDomain>
+    <AppDomain>https://10.17.62.23:5001</AppDomain>
+    <AppDomain>https://marktest.syno:443</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Mailbox"/>
@@ -96,8 +99,8 @@
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GroupLabel" DefaultValue="Git the gist"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Insert gist"/>
-        <bt:String id="TaskpaneButton.Title" DefaultValue="Insert gist"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Start synology meeting"/>
+        <bt:String id="TaskpaneButton.Title" DefaultValue="Start synology meeting"/>
         <bt:String id="FunctionButton.Label" DefaultValue="Insert default gist"/>
         <bt:String id="FunctionButton.Title" DefaultValue="Insert default gist"/>
       </bt:ShortStrings>

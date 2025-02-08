@@ -1,13 +1,61 @@
-(function(){
-  'use strict';
+(function () {
+  "use strict";
 
   let config;
   let settingsDialog;
 
-  Office.initialize = function(reason){
+// The onReady function must be run each time a new page is loaded.
+Office.onReady();
 
-    jQuery(document).ready(function(){
+  // eslint-disable-next-line no-undef
+  document.getElementById("connect-button").addEventListener("click", function () {
+    // eslint-disable-next-line no-undef
+    var nasAddress = document.getElementById("nas-address").value;
+    // eslint-disable-next-line no-undef
+    var iframe = document.getElementById("meeting-iframe");
+    // iframe.src = nasAddress;
+    // iframe.src = "https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8";
+    // iframe.style.display = "block";
+  });
 
+  // eslint-disable-next-line no-undef
+  window.addEventListener("message", function (event) {
+    // eslint-disable-next-line no-undef
+
+    if (event.origin === "https://marktest.syno") {
+      console.log("Received message: data " + event.data + " origin " + event.origin);
+
+      // Assuming the message data is in event.data
+      var data = event.data;
+
+      // Hide the iframe after receiving the data
+      // eslint-disable-next-line no-undef
+      document.getElementById("meeting-iframe").style.display = "none";
+
+      // Set the content in the email body if Office is available
+      // var content = "The meeting link is <a href='https://10.17.62.23:5001/meet/authed/" + data + "'>Join Meeting</a><br>";
+      var content =
+        "The meeting link is <a href='https://10.17.62.23:5001/meet/authed/" +
+        data +
+        "' target='_blank'>Join Meeting</a><br>";
+
+      Office.context.mailbox.item.body.setSelectedDataAsync(
+        content,
+        { coercionType: Office.CoercionType.Html },
+        function (result) {
+          if (result.status === Office.AsyncResultStatus.Succeeded) {
+            console.log("Content inserted successfully");
+          } else {
+            console.error("Error inserting content:", result.error);
+          }
+        }
+      );
+    }
+  });
+
+  // eslint-disable-next-line office-addins/no-office-initialize
+  Office.initialize = function () {
+    jQuery(document).ready(function () {
       config = getConfig();
 
       // Check if add-in is configured.
@@ -16,85 +64,103 @@
         loadGists(config.gitHubUserName);
       } else {
         // Not configured yet.
-        $('#not-configured').show();
+        $("#not-configured").show();
       }
 
       // When insert button is selected, build the content
       // and insert into the body.
-      $('#insert-button').on('click', function(){
-        const gistId = $('.ms-ListItem.is-selected').val();
-        getGist(gistId, function(gist, error) {
-          if (gist) {
-            buildBodyContent(gist, function (content, error) {
-              if (content) {
-                Office.context.mailbox.item.body.setSelectedDataAsync(content,
-                  {coercionType: Office.CoercionType.Html}, function(result) {
-                    if (result.status === Office.AsyncResultStatus.Failed) {
-                      showError('Could not insert gist: ' + result.error.message);
-                    }
-                });
-              } else {
-                showError('Could not create insertable content: ' + error);
-              }
-            });
+      $("#connect-button").on("click", function () {
+        // eslint-disable-next-line no-undef
+        // var nasAddress = document.getElementById("nas-address").value;
+        // // eslint-disable-next-line no-undef
+        // var iframe = document.getElementById("meeting-iframe");
+        // // iframe.src = nasAddress;
+        // iframe.src = "https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8";
+        // iframe.style.display = 'block';
+        // Display settings dialog.
+        let url = new URI("https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8").toString();
+        // let url = new URI("https://10.17.62.23:5001/meet?topic=test&type=webniar").toString();
+        // let url = new URI("dialog.html").absoluteTo(window.location).toString();
+        // window.open(url, "_blank");
+        // window.addEventListener("message", function (event) {
+        //     console.log("Received message: " + event.data);
+        // });
+        const dialogOptions = { width: 60, height: 120, displayInIframe: true };
+        Office.context.ui.displayDialogAsync(url, dialogOptions, function (result) {
+          if (result.status === Office.AsyncResultStatus.Succeeded) {
+            console.log("Dialog created successfully.");
+
+            settingsDialog = result.value;
+            settingsDialog.addEventHandler(Office.EventType.DialogMessageReceived, receiveMessage);
+            settingsDialog.addEventHandler(Office.EventType.DialogEventReceived, dialogClosed);
           } else {
-            showError('Could not retrieve gist: ' + error);
+            console.error("Failed to display dialog: " + result.error.message);
           }
         });
       });
-
-      // When the settings icon is selected, open the settings dialog.
-      $('#settings-icon').on('click', function(){
-        // Display settings dialog.
-        let url = new URI('dialog.html').absoluteTo(window.location).toString();
-        if (config) {
-          // If the add-in has already been configured, pass the existing values
-          // to the dialog.
-          url = url + '?gitHubUserName=' + config.gitHubUserName + '&defaultGistId=' + config.defaultGistId;
-        }
-
-        const dialogOptions = { width: 20, height: 40, displayInIframe: true };
-
-        Office.context.ui.displayDialogAsync(url, dialogOptions, function(result) {
-          settingsDialog = result.value;
-          settingsDialog.addEventHandler(Office.EventType.DialogMessageReceived, receiveMessage);
-          settingsDialog.addEventHandler(Office.EventType.DialogEventReceived, dialogClosed);
-        });
-      })
     });
   };
 
+  function getConfig() {
+    return Office.context.roamingSettings.get("config");
+  }
+
+  function sendQueryAllRequest() {
+    const apiUrl = "https://10.17.62.23:5001/webapi/query.cgi?api=SYNO.API.Info&method=query&version=1&query=all";
+
+    // Prepare the data to be sent in the request body
+    const requestData = {
+      name: "John Doe",
+      email: "john.doe@example.com",
+    };
+
+    // Send the POST request using fetch
+    fetch(apiUrl, {
+      method: "GET", // HTTP method
+      headers: {
+        "Content-Type": "application/json", // Indicate that we're sending JSON
+      },
+      // body: JSON.stringify(requestData), // Convert the data object to JSON
+    })
+      .then((response) => response.json()) // Parse the JSON response
+      .then((data) => {
+        console.log("Success:", data); // Handle the success response
+      })
+      .catch((error) => {
+        console.error("Error:", error); // Handle any errors
+      });
+  }
+
   function loadGists(user) {
-    $('#error-display').hide();
-    $('#not-configured').hide();
-    $('#gist-list-container').show();
+    $("#error-display").hide();
+    $("#not-configured").hide();
+    $("#gist-list-container").show();
 
-    getUserGists(user, function(gists, error) {
+    getUserGists(user, function (gists, error) {
       if (error) {
-
       } else {
-        $('#gist-list').empty();
-        buildGistList($('#gist-list'), gists, onGistSelected);
+        $("#gist-list").empty();
+        buildGistList($("#gist-list"), gists, onGistSelected);
       }
     });
   }
 
   function onGistSelected() {
-    $('#insert-button').removeAttr('disabled');
-    $('.ms-ListItem').removeClass('is-selected').removeAttr('checked');
-    $(this).children('.ms-ListItem').addClass('is-selected').attr('checked', 'checked');
+    $("#insert-button").removeAttr("disabled");
+    $(".ms-ListItem").removeClass("is-selected").removeAttr("checked");
+    $(this).children(".ms-ListItem").addClass("is-selected").attr("checked", "checked");
   }
 
   function showError(error) {
-    $('#not-configured').hide();
-    $('#gist-list-container').hide();
-    $('#error-display').text(error);
-    $('#error-display').show();
+    $("#not-configured").hide();
+    $("#gist-list-container").hide();
+    $("#error-display").text(error);
+    $("#error-display").show();
   }
 
   function receiveMessage(message) {
     config = JSON.parse(message.message);
-    setConfig(config, function(result) {
+    setConfig(config, function (result) {
       settingsDialog.close();
       settingsDialog = null;
       loadGists(config.gitHubUserName);
