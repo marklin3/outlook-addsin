@@ -1,64 +1,85 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <title>Settings</title>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-  <title>Settings</title>
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
 
-  <!-- Office JavaScript API -->
-  <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <!-- Template styles -->
+    <link href="dialog.css" rel="stylesheet" type="text/css" />
 
-<!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui. -->
-  <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+    <style>
+      /* Ensure body and html elements take up the full height of the window */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
 
-  <!-- Template styles -->
-  <link href="dialog.css" rel="stylesheet" type="text/css" />
-</head>
+      /* Make the iframe take up the full height and width of its parent container */
+      iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        display: none; /* Hide the iframe initially */
+      }
 
-<body class="ms-font-l">
-  <main>
-    <section class="ms-font-m ms-fontColor-neutralPrimary">
-      <div class="not-configured-warning ms-MessageBar ms-MessageBar--warning">
-        <div class="ms-MessageBar-content">
-          <div class="ms-MessageBar-icon">
-            <i class="ms-Icon ms-Icon--Info"></i>
-          </div>
-          <div class="ms-MessageBar-text">
-            Oops! It looks like you haven't configured <strong>Git the gist</strong> yet.
-            <br/>
-            Please configure your GitHub username and select a default gist, then try that action again!
-          </div>
-        </div>
-      </div>
-      <div class="ms-font-xxl">Settings</div>
-      <div class="ms-Grid">
-        <div class="ms-Grid-row">
-          <div class="ms-TextField">
-            <label class="ms-Label">GitHub Username</label>
-            <input class="ms-TextField-field" id="github-user" type="text" value="" placeholder="Please enter your GitHub username">
-          </div>
-        </div>
-        <div class="gist-list-container ms-Grid-row">
-          <div class="list-title ms-font-xl ms-fontWeight-regular">Choose Default Gist</div>
-          <form>
-            <div id="gist-list">
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="ms-Dialog-actions">
-        <div class="ms-Dialog-actionsRight">
-          <button class="ms-Dialog-action ms-Button ms-Button--primary" id="settings-done" disabled>
-            <span class="ms-Button-label">Done</span>
-          </button>
-        </div>
-      </div>
-    </section>
-  </main>
-  <script type="text/javascript" src="../../node_modules/jquery/dist/jquery.js"></script>
-  <script type="text/javascript" src="../helpers/gist-api.js"></script>
-  <script type="text/javascript" src="dialog.js"></script>
-</body>
+      /* Loading spinner styles */
+      .loading-spinner {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 20px;
+        color: #0078d4;
+      }
+    </style>
 
+    <script>
+      // Function to hide the loading spinner and show the iframe
+      function hideLoadingSpinner() {
+        document.getElementById("loadingMessage").style.display = "none";
+        document.getElementById("iframe").style.display = "block"; // Show the iframe once it's loaded
+      }
+
+      // Ensure scripts execute after DOM content is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        let urlParams = new URLSearchParams(window.location.search);
+        let nasAddress = urlParams.get("address");
+        let roomName = urlParams.get("roomName");
+
+        // TODO: Error handling if needed
+        if (nasAddress.startsWith("http://")) {
+          nasAddress = nasAddress.replace("http://", "https://");
+        } else if (!nasAddress.startsWith("https://")) {
+          nasAddress = "https://" + nasAddress;
+        }
+
+        // Dynamically update the iframe source if address is valid
+        document.getElementById("iframe").src =
+          "https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8?roomName=" + roomName;
+
+        // Attach onload event dynamically to avoid function scope issues
+        document.getElementById("iframe").onload = hideLoadingSpinner;
+      });
+    </script>
+  </head>
+
+  <body>
+    <!-- Loading spinner or message -->
+    <div class="loading-spinner" id="loadingMessage">
+      <p>Loading, please wait...</p>
+    </div>
+
+    <!-- IFrame -->
+    <iframe id="iframe" src=""></iframe>
+
+    <!-- External scripts -->
+    <script type="text/javascript" src="../../node_modules/jquery/dist/jquery.js"></script>
+    <script type="text/javascript" src="dialog.js"></script>
+  </body>
 </html>

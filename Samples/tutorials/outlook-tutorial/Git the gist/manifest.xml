@@ -2,18 +2,16 @@
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0" xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0" xsi:type="MailApp">
   <Id>ee3bd144-bde6-4057-91d6-d28e1ac7faf2</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>Contoso</ProviderName>
+  <ProviderName>Synology</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Synology meeting DisplayName"/>
-  <Description DefaultValue="Allows users to access their GitHub gists."/>
+  <Description DefaultValue="Allows users to start a Synology meeting in Outlook."/>
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-128.png"/>
   <SupportUrl DefaultValue="https://www.contoso.com/help"/>
   <AppDomains>
     <AppDomain>https://www.contoso.com</AppDomain>
     <AppDomain>https://localhost:3000</AppDomain>
-    <AppDomain>https://10.17.62.23:5001</AppDomain>
-    <AppDomain>https://marktest.syno:443</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Mailbox"/>
@@ -46,7 +44,8 @@
       <Host xsi:type="MailHost">
         <DesktopFormFactor>
           <FunctionFile resid="Commands.Url"/>
-          <!-- Message Compose -->
+
+          <!-- Message Compose (mail) -->
           <ExtensionPoint xsi:type="MessageComposeCommandSurface">
             <OfficeTab id="TabDefault">
               <Group id="msgComposeCmdGroup">
@@ -66,19 +65,28 @@
                     <SourceLocation resid="Taskpane.Url"/>
                   </Action>
                 </Control>
-                <Control xsi:type="Button" id="msgComposeInsertDefaultGist">
-                  <Label resid="FunctionButton.Label"/>
+              </Group>
+            </OfficeTab>
+          </ExtensionPoint>
+
+          <!-- Appointment Compose (calendar) -->
+          <ExtensionPoint xsi:type="AppointmentOrganizerCommandSurface">
+            <OfficeTab id="TabDefault2">
+              <Group id="msgComposeCmdGroup2">
+                <Label resid="GroupLabel"/>
+                <Control xsi:type="Button" id="msgComposeInsertGist2">
+                  <Label resid="TaskpaneButton.Label"/>
                   <Supertip>
-                    <Title resid="FunctionButton.Title"/>
-                    <Description resid="FunctionButton.Tooltip"/>
+                    <Title resid="TaskpaneButton.Title"/>
+                    <Description resid="TaskpaneButton.Tooltip"/>
                   </Supertip>
                   <Icon>
                     <bt:Image size="16" resid="Icon.16x16"/>
                     <bt:Image size="32" resid="Icon.32x32"/>
                     <bt:Image size="80" resid="Icon.80x80"/>
                   </Icon>
-                  <Action xsi:type="ExecuteFunction">
-                    <FunctionName>insertDefaultGist</FunctionName>
+                  <Action xsi:type="ShowTaskpane">
+                    <SourceLocation resid="Taskpane.Url"/>
                   </Action>
                 </Control>
               </Group>
@@ -101,12 +109,9 @@
         <bt:String id="GroupLabel" DefaultValue="Git the gist"/>
         <bt:String id="TaskpaneButton.Label" DefaultValue="Start synology meeting"/>
         <bt:String id="TaskpaneButton.Title" DefaultValue="Start synology meeting"/>
-        <bt:String id="FunctionButton.Label" DefaultValue="Insert default gist"/>
-        <bt:String id="FunctionButton.Title" DefaultValue="Insert default gist"/>
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Displays a list of your gists and allows you to insert their contents into the current message."/>
-        <bt:String id="FunctionButton.Tooltip" DefaultValue="Inserts the content of the gist you mark as default into the current message."/>
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

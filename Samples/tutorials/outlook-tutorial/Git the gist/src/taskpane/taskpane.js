@@ -1,11 +1,12 @@
+/* eslint-disable no-undef */
 (function () {
   "use strict";
 
   let config;
   let settingsDialog;
 
-// The onReady function must be run each time a new page is loaded.
-Office.onReady();
+  // The onReady function must be run each time a new page is loaded.
+  Office.onReady();
 
   // eslint-disable-next-line no-undef
   document.getElementById("connect-button").addEventListener("click", function () {
@@ -16,41 +17,6 @@ Office.onReady();
     // iframe.src = nasAddress;
     // iframe.src = "https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8";
     // iframe.style.display = "block";
-  });
-
-  // eslint-disable-next-line no-undef
-  window.addEventListener("message", function (event) {
-    // eslint-disable-next-line no-undef
-
-    if (event.origin === "https://marktest.syno") {
-      console.log("Received message: data " + event.data + " origin " + event.origin);
-
-      // Assuming the message data is in event.data
-      var data = event.data;
-
-      // Hide the iframe after receiving the data
-      // eslint-disable-next-line no-undef
-      document.getElementById("meeting-iframe").style.display = "none";
-
-      // Set the content in the email body if Office is available
-      // var content = "The meeting link is <a href='https://10.17.62.23:5001/meet/authed/" + data + "'>Join Meeting</a><br>";
-      var content =
-        "The meeting link is <a href='https://10.17.62.23:5001/meet/authed/" +
-        data +
-        "' target='_blank'>Join Meeting</a><br>";
-
-      Office.context.mailbox.item.body.setSelectedDataAsync(
-        content,
-        { coercionType: Office.CoercionType.Html },
-        function (result) {
-          if (result.status === Office.AsyncResultStatus.Succeeded) {
-            console.log("Content inserted successfully");
-          } else {
-            console.error("Error inserting content:", result.error);
-          }
-        }
-      );
-    }
   });
 
   // eslint-disable-next-line office-addins/no-office-initialize
@@ -70,26 +36,31 @@ Office.onReady();
       // When insert button is selected, build the content
       // and insert into the body.
       $("#connect-button").on("click", function () {
-        // eslint-disable-next-line no-undef
-        // var nasAddress = document.getElementById("nas-address").value;
+        var nasAddress = document.getElementById("nas-address").value;
+        var topic = document.getElementById("meeting-topic").value;
+
+
         // // eslint-disable-next-line no-undef
         // var iframe = document.getElementById("meeting-iframe");
         // // iframe.src = nasAddress;
         // iframe.src = "https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8";
         // iframe.style.display = 'block';
         // Display settings dialog.
-        let url = new URI("https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8").toString();
+        // let url = new URI("https://marktest.syno:443/meet/e7fd0342-e2fe-4935-a75f-176197aaedc4/summary/8").toString();
         // let url = new URI("https://10.17.62.23:5001/meet?topic=test&type=webniar").toString();
-        // let url = new URI("dialog.html").absoluteTo(window.location).toString();
+        let url = new URI("dialog.html").absoluteTo(window.location).toString();
+        let data = { address: nasAddress, roomName: topic };
+        let queryParams = new URLSearchParams(data).toString();
+        let fullUrl = `${url}?${queryParams}`;
+
+
         // window.open(url, "_blank");
         // window.addEventListener("message", function (event) {
         //     console.log("Received message: " + event.data);
         // });
-        const dialogOptions = { width: 60, height: 120, displayInIframe: true };
-        Office.context.ui.displayDialogAsync(url, dialogOptions, function (result) {
+        const dialogOptions = { width: 80, height: 120, displayInIframe: true };
+        Office.context.ui.displayDialogAsync(fullUrl, dialogOptions, function (result) {
           if (result.status === Office.AsyncResultStatus.Succeeded) {
-            console.log("Dialog created successfully.");
-
             settingsDialog = result.value;
             settingsDialog.addEventHandler(Office.EventType.DialogMessageReceived, receiveMessage);
             settingsDialog.addEventHandler(Office.EventType.DialogEventReceived, dialogClosed);
@@ -158,13 +129,19 @@ Office.onReady();
     $("#error-display").show();
   }
 
-  function receiveMessage(message) {
-    config = JSON.parse(message.message);
-    setConfig(config, function (result) {
-      settingsDialog.close();
-      settingsDialog = null;
-      loadGists(config.gitHubUserName);
-    });
+  function receiveMessage(data) {
+    console.log("Received message: " + data.message);
+
+    Office.context.mailbox.item.body.setSelectedDataAsync(
+      data.message,
+      { coercionType: Office.CoercionType.Html },
+      function (result) {
+        if (settingsDialog !== null) {
+          settingsDialog.close();
+          settingsDialog = null;
+        }
+      }
+    );
   }
 
   function dialogClosed(message) {
